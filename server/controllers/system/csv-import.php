@@ -1,6 +1,4 @@
 <?php
-use Respect\Validation\Validator as DataValidator;
-DataValidator::with('CustomValidations', true);
 
 /**
  * @api {post} /system/csv-import CSV import
@@ -17,7 +15,6 @@ DataValidator::with('CustomValidations', true);
  * @apiParam {String} file A csv file with this content format: email, password, name.
  *
  * @apiUse NO_PERMISSION
- * @apiUse INVALID_PASSWORD
  * @apiUse INVALID_FILE
  * 
  * @apiSuccess {String[]} data Array of errors found
@@ -31,42 +28,31 @@ class CSVImportController extends Controller {
     public function validations() {
         return [
             'permission' => 'staff_3',
-            'requestData' => [],
-            'password' => [
-                'validation' => DataValidator::notBlank()->length(LengthConfig::MIN_LENGTH_PASSWORD, LengthConfig::MAX_LENGTH_PASSWORD),
-                'error' => ERRORS::INVALID_PASSWORD
-            ]
+            'requestData' => []
         ];
     }
 
     public function handler() {
-        $password = Controller::request('password');
-
-        if(!Hashing::verifyPassword($password, Controller::getLoggedUser()->password)) {
-            throw new RequestException(ERRORS::INVALID_PASSWORD);
-        }
-
         $fileUploader = $this->uploadFile(true);
 
         if(!$fileUploader instanceof FileUploader) {
             throw new RequestException(ERRORS::INVALID_FILE);
         }
 
-        $fileDownloader = FileDownloader::getInstance();
-        $fileDownloader->setFileName($fileUploader->getFileName());
-        $file = $fileDownloader->fopen();
-
+        $file = fopen($fileUploader->getFullFilePath(),'r');
         $errors = [];
 
-        while($file && ($user = fgetcsv($file)) != false) {
-            Controller::setDataRequester(function ($key) use ($user) {
+        while(!feof($file)) {
+            $userList = fgetcsv($file);
+
+            Controller::setDataRequester(function ($key) use ($userList) {
                 switch ($key) {
                     case 'email':
-                        return $user[0];
+                        return $userList[0];
                     case 'password':
-                        return $user[1];
+                        return $userList[1];
                     case 'name':
-                        return $user[2];
+                        return $userList[2];
                 }
 
                 return null;
@@ -78,13 +64,14 @@ class CSVImportController extends Controller {
                 $signupController->validate();
                 $signupController->handler();
             } catch (\Exception $exception) {
-                $errors[] = $exception->getMessage() . ' in email ' . $user[0];
+                $errors[] = $exception->getMessage() . ' in email ' . $userList[0];
             }
         }
 
         fclose($file);
         
         unlink($fileUploader->getFullFilePath());
+        
         Response::respondSuccess($errors);
     }
 }

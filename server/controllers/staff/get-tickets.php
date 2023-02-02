@@ -19,7 +19,6 @@ use Respect\Validation\Validator as DataValidator;
  * 
  * @apiUse NO_PERMISSION
  * @apiUse INVALID_PAGE
- * @apiUse INVALID_PAGE_SIZE
  *
  * @apiSuccess {Object} data Information about a tickets and quantity of pages.
  * @apiSuccess {[Ticket](#api-Data_Structures-ObjectTicket)[]} data.tickets Array of tickets assigned to the staff of the current page.
@@ -39,10 +38,6 @@ class GetTicketStaffController extends Controller {
                 'page' => [
                     'validation' => DataValidator::numeric(),
                     'error' => ERRORS::INVALID_PAGE
-                ],
-                'pageSize' => [
-                  'validation' => DataValidator::oneOf(DataValidator::intVal()->between(5, 50),DataValidator::nullType()),
-                  'error' => ERRORS::INVALID_PAGE_SIZE
                 ]
             ]
         ];
@@ -53,8 +48,7 @@ class GetTicketStaffController extends Controller {
         $closed = Controller::request('closed');
         $page = Controller::request('page');
         $departmentId = Controller::request('departmentId');
-        $pageSize = Controller::request('pageSize') ? Controller::request('pageSize') : 10;
-        $offset = ($page-1)*$pageSize;
+        $offset = ($page-1)*10;
 
         $condition = 'TRUE';
         $bindings = [];
@@ -71,7 +65,7 @@ class GetTicketStaffController extends Controller {
 
         $countTotal = $user->withCondition($condition, $bindings)->countShared('ticket');
 
-        $condition .= ' LIMIT ' . $pageSize . ' OFFSET ?';
+        $condition .= ' LIMIT 10 OFFSET ?';
         $bindings[] = $offset;
 
         $tickets = $user->withCondition($condition, $bindings)->sharedTicketList->toArray(true);
@@ -79,7 +73,7 @@ class GetTicketStaffController extends Controller {
         Response::respondSuccess([
             'tickets' => $tickets,
             'page' => $page,
-            'pages' => ceil($countTotal / $pageSize)
+            'pages' => ceil($countTotal / 10)
         ]);
     }
 }

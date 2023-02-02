@@ -122,7 +122,7 @@ class AdminPanelEmailSettings extends React.Component {
                     <div className="admin-panel-email-settings__image-container">
                         <FormField className="admin-panel-email-settings__image-header-url"
                                    label={i18n('IMAGE_HEADER_URL')} name="headerImage" required
-                                   infoMessage={i18n('IMAGE_HEADER_DESCRIPTION')}
+                                   infoMessage={i18n('IMAGE_HEADER_URL_DESCRIPTION')}
                                    fieldProps={{size: 'large'}} />
                         <SubmitButton className="admin-panel-email-settings__image-header-submit" type="secondary"
                                       size="small">{i18n('SAVE')}</SubmitButton>
@@ -179,61 +179,39 @@ class AdminPanelEmailSettings extends React.Component {
     }
 
     renderForm() {
-        const { form, language, selectedIndex, edited } = this.state;
-        const { template, text2, text3} = form;
-
+        const {
+            form,
+            language,
+            selectedIndex,
+            edited
+        } = this.state;
         return (
             <div className="col-md-9">
                 <FormField label={i18n('LANGUAGE')} decorator={LanguageSelector} value={language}
                            onChange={event => this.onItemChange(selectedIndex, event.target.value)}
                            fieldProps={{
-                               type: 'supported',
+                               type: 'allowed',
                                size: 'medium'
                            }} />
                 <Form {...this.getFormProps()}>
                     <div className="row">
                         <div className="col-md-7">
-                            <FormField
-                                fieldProps={{size: 'large'}}
-                                label={i18n('SUBJECT')}
-                                name="subject"
-                                validation="TITLE"
-                                required />
+                            <FormField label={i18n('SUBJECT')} name="subject" validation="TITLE" required
+                                       fieldProps={{size: 'large'}} />
                         </div>
                     </div>
 
-                    <FormField
-                        fieldProps={{className: 'admin-panel-email-settings__text-area'}}
-                        label={i18n('TEXT') + '1'}
-                        key="text1"
-                        name="text1"
-                        validation="TEXT_AREA"
-                        required
-                        decorator={'textarea'} />
-                    {
-                        (text2 || text2 === "") ?
-                            <FormField
-                                fieldProps={{className: 'admin-panel-email-settings__text-area'}}
-                                label={i18n('TEXT') + '2'}
-                                key="text2"
-                                name="text2"
-                                validation="TEXT_AREA"
-                                required
-                                decorator={'textarea'} /> :
-                            null
-                    }
-                    {
-                        ((text3 || text3 === "") && (template !== "USER_PASSWORD" && template !== "USER_EMAIL")) ?
-                            <FormField
-                                fieldProps={{className: 'admin-panel-email-settings__text-area'}}
-                                label={i18n('TEXT') + '3'}
-                                key="text3"
-                                name="text3"
-                                validation={(template !== "USER_PASSWORD" && template !== "USER_EMAIL") ? "TEXT_AREA" : ""}
-                                required={(template !== "USER_PASSWORD" && template !== "USER_EMAIL")}
-                                decorator={'textarea'} /> :
-                            null
-                    }
+                    <FormField key="text1" label={i18n('TEXT') + '1'} name="text1" validation="TEXT_AREA" required
+                               decorator={'textarea'}
+                               fieldProps={{className: 'admin-panel-email-settings__text-area'}} />
+                    {(form.text2 || form.text2 === "") ?
+                        <FormField key="text2" label={i18n('TEXT') + '2'} name="text2" validation="TEXT_AREA" required
+                                   decorator={'textarea'}
+                                   fieldProps={{className: 'admin-panel-email-settings__text-area'}} /> : null}
+                    {(form.text3 || form.text3 === "") ?
+                        <FormField key="text3" label={i18n('TEXT') + '3'} name="text3" validation="TEXT_AREA" required
+                                   decorator={'textarea'}
+                                   fieldProps={{className: 'admin-panel-email-settings__text-area'}} /> : null}
 
                     <div className="admin-panel-email-settings__actions">
                         <div className="admin-panel-email-settings__optional-buttons">
@@ -245,7 +223,11 @@ class AdminPanelEmailSettings extends React.Component {
                             {edited ? this.renderDiscardButton() : null}
                         </div>
                         <div className="admin-panel-email-settings__save-button">
-                            <SubmitButton key="submit-email-template" type="secondary" size="small">
+                            <SubmitButton
+                                key="submit-email-template"
+                                type="secondary"
+                                size="small"
+                                onClick={(e) => {e.preventDefault(); this.onFormSubmit(form);}}>
                                     {i18n('SAVE')}
                             </SubmitButton>
                         </div>
@@ -275,19 +257,16 @@ class AdminPanelEmailSettings extends React.Component {
     }
 
     getFormProps() {
-        const { form, errors, loadingForm } = this.state;
-
         return {
-            values: form,
-            errors,
-            loading: loadingForm,
+            values: this.state.form,
+            errors: this.state.errors,
+            loading: this.state.loadingForm,
             onChange: (form) => {
                 this.setState({form, edited: true})
             },
             onValidateErrors: (errors) => {
                 this.setState({errors})
             },
-            onSubmit: this.onFormSubmit.bind(this, form)
         }
     }
 

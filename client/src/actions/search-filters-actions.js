@@ -9,15 +9,14 @@ export default {
             payload: {}
         }
     },
-    retrieveSearchTickets(ticketQueryListState, filters = {}, pageSize = 10) {
+    retrieveSearchTickets(ticketQueryListState, filters = {}) {
         return {
             type: 'SEARCH_TICKETS',
             payload: API.call({
                 path: '/ticket/search',
                 data: {
                     ...filters,
-                    page: ticketQueryListState.page,
-                    pageSize
+                    page: ticketQueryListState.page
                 }
             })
         }
@@ -29,7 +28,7 @@ export default {
         }
     },
     changeFilters(listConfig) {
-        const filtersForAPI = searchTicketsUtils.getFiltersForAPI(listConfig.filters);
+        const filtersForAPI = searchTicketsUtils.prepareFiltersForAPI(listConfig.filters);
 
         return {
             type: 'SEARCH_FILTERS_CHANGE_FILTERS',
@@ -49,7 +48,7 @@ export default {
         }
     },
     changePage(filtersWithPage) {
-        const filtersForAPI = searchTicketsUtils.getFiltersForAPI(filtersWithPage);
+        const filtersForAPI = searchTicketsUtils.prepareFiltersForAPI(filtersWithPage);
         const currentPath = window.location.pathname;
         const urlQuery = searchTicketsUtils.getFiltersForURL({
             filters: filtersForAPI,
@@ -64,7 +63,7 @@ export default {
         }
     },
     changeOrderBy(filtersWithOrderBy) {
-        const filtersForAPI = searchTicketsUtils.getFiltersForAPI(filtersWithOrderBy);
+        const filtersForAPI = searchTicketsUtils.prepareFiltersForAPI(filtersWithOrderBy);
         const currentPath = window.location.pathname;
         const urlQuery = searchTicketsUtils.getFiltersForURL({
             filters: filtersForAPI,

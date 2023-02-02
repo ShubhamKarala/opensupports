@@ -11,6 +11,7 @@ const DEFAULT_FILTERS = {
     departments: '[]',
     owners: '[]',
     tags: '[]',
+    dateRange: searchTicketsUtils.getDefaultUTCRange(),
     orderBy: undefined,
     authors: '[]',
 };
@@ -29,7 +30,11 @@ class searchFiltersReducer extends Reducer {
                 owners: [],
                 tags: [],
                 authors: [],
-                period: 0
+                dateRange: {
+                    valid: true,
+                    startDate: searchTicketsUtils.getDefaultLocalStartDate(),
+                    endDate: searchTicketsUtils.getDefaultlocalEndDate()
+                }
             },
             ticketQueryListState : {
                 tickets: [],

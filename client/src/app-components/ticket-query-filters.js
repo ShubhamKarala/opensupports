@@ -8,7 +8,6 @@ import i18n from 'lib-app/i18n';
 import API from 'lib-app/api-call';
 import history from 'lib-app/history';
 import searchTicketsUtils from 'lib-app/search-tickets-utils';
-import ticketUtils from 'lib-app/ticket-utils';
 
 import Form from 'core-components/form';
 import SubmitButton from 'core-components/submit-button';
@@ -35,8 +34,7 @@ class TicketQueryFilters extends React.Component {
             formState,
             filters,
             showFilters,
-            ticketQueryListState,
-            staffList
+            ticketQueryListState
         } = this.props;
 
         return (
@@ -49,15 +47,22 @@ class TicketQueryFilters extends React.Component {
                     <div className="ticket-query-filters__search-box">
                         <FormField name="query" field="search-box" fieldProps={{onSearch: this.onSubmitListConfig.bind(this)}} />
                     </div>
-                    <div className="ticket-query-filters__second-row">
+                    <div className="ticket-query-filters__first-row">
                         <FormField
-                            label={i18n('PERIOD')}
-                            name="period"
+                            label={i18n('DATE')}
+                            name="dateRange"
+                            field="date-range"
+                            fieldProps={{defaultValue: formState.dateRange}} />
+                        <FormField
+                            label={i18n('STATUS')}
+                            name="closed"
                             field="select"
                             fieldProps={{
-                                items: [{content: i18n('LAST_7_DAYS')}, {content: i18n('LAST_30_DAYS')}, {content: i18n('LAST_90_DAYS')}, {content: i18n('LAST_365_DAYS')}],
-                                className: 'ticket-query-filters__drop-down'
+                                items: this.getStatusItems(),
+                                className: 'ticket-query-filters__status-drop-down'
                             }} />
+                    </div>
+                    <div className="ticket-query-filters__second-row">
                         <FormField
                             label={i18n('DEPARTMENTS')}
                             name="departments"
@@ -67,17 +72,9 @@ class TicketQueryFilters extends React.Component {
                             label={i18n('OWNER')}
                             name="owners"
                             field="autocomplete"
-                            fieldProps={{items: ticketUtils.getStaffList({staffList}, 'toAutocomplete')}} />
+                            fieldProps={{items: this.getStaffList()}} />
                     </div>
                     <div className="ticket-query-filters__third-row">
-                        <FormField
-                            label={i18n('STATUS')}
-                            name="closed"
-                            field="select"
-                            fieldProps={{
-                                items: this.getStatusItems(),
-                                className: 'ticket-query-filters__drop-down'
-                            }} />
                         <FormField
                             label={i18n('TAGS')}
                             name="tags"
@@ -134,8 +131,8 @@ class TicketQueryFilters extends React.Component {
                     id: author.id*1,
                     profilePic: author.profilePic,
                     isStaff: author.isStaff * 1,
-                    content: author.profilePic !== undefined ? ticketUtils.renderStaffOption(author) : author.name,
-                    contentOnSelected: author.profilePic !== undefined ? ticketUtils.renderStaffSelected(author) : author.name
+                    content: author.profilePic !== undefined ? this.renderStaffOption(author) : author.name,
+                    contentOnSelected: author.profilePic !== undefined ? this.renderStaffSelected(author) : author.name
                 }});
         });
     }
@@ -162,9 +159,29 @@ class TicketQueryFilters extends React.Component {
         );
     }
 
+    renderStaffOption(staff) {
+        return (
+            <div className="ticket-query-filters__staff-option" key={`staff-option-${staff.id}`}>
+                <img className="ticket-query-filters__staff-option__profile-pic" src={this.getStaffProfilePic(staff)}/>
+                <span className="ticket-query-filters__staff-option__name">{staff.name}</span>
+            </div>
+        );
+    }
+
+    renderStaffSelected(staff) {
+        return (
+            <div className="ticket-query-filters__staff-selected" key={`staff-selected-${staff.id}`}>
+                <img className="ticket-query-filters__staff-selected__profile-pic" src={this.getStaffProfilePic(staff)}/>
+                <span className="ticket-query-filters__staff-selected__name">{staff.name}</span>
+            </div>
+        );
+    }
+
     addTag(tag) {
         const { formState } = this.props;
-        this.onChangeFormState({...formState, tags: [...formState.tags, tag]});
+        let selectedTagsId = formState.tags.concat(this.tagsNametoTagsId(this.getSelectedTagsName([tag])));
+
+        this.onChangeFormState({...formState, tags: selectedTagsId});
     }
 
     autorsComparer(autorList, autorSelectedList) {
@@ -195,23 +212,18 @@ class TicketQueryFilters extends React.Component {
         let selectedDepartments = [];
 
         if(selectedDepartmentsId !== undefined) {
-            selectedDepartments = selectedDepartmentsId.map(
-                (departmentId) => this.getDepartmentsItems().find(_department => (_department.id === departmentId))
-            );
-
+            let departments = this.getDepartmentsItems();
+            selectedDepartments = departments.filter(item => _.includes(selectedDepartmentsId, item.id));
         }
 
         return selectedDepartments;
     }
 
     getSelectedStaffs(selectedStaffsId) {
-        const { staffList } = this.props;
         let selectedStaffs = [];
-
         if(selectedStaffsId !== undefined) {
-            selectedStaffs = selectedStaffsId.map(
-                (staffId) => ticketUtils.getStaffList({staffList}, 'toAutocomplete').find(_staff => (_staff.id === staffId))
-            );
+            let staffs = this.getStaffList();
+            selectedStaffs = staffs.filter(staff => _.includes(selectedStaffsId, staff.id));
         }
 
         return selectedStaffs;
@@ -221,12 +233,31 @@ class TicketQueryFilters extends React.Component {
         let selectedTagsName = [];
 
         if(selectedTagsId !== undefined) {
-            selectedTagsName = selectedTagsId.map(
-                (tagId) => (this.getTags().find(_tag => (_tag.id === tagId)) || {}).name
-            );
+            let tagList = this.getTags();
+            let selectedTags = tagList.filter(item => _.includes(selectedTagsId, item.id));
+            selectedTagsName = selectedTags.map(tag => tag.name);
         }
 
         return selectedTagsName;
+    }
+
+    getStaffList() {
+        const { staffList, } = this.props;
+        let newStaffList = staffList.map(staff => {
+            return {
+                id: JSON.parse(staff.id),
+                name: staff.name.toLowerCase(),
+                color: 'gray',
+                contentOnSelected: this.renderStaffSelected(staff),
+                content: this.renderStaffOption(staff),
+            }
+        });
+
+        return newStaffList;
+    }
+
+    getStaffProfilePic(staff) {
+        return staff.profilePic ? API.getFileLink(staff.profilePic) : (API.getURL() + '/images/profile.png');
     }
 
     getStatusItems() {
@@ -267,8 +298,8 @@ class TicketQueryFilters extends React.Component {
             true
         );
 
-        if(formEdited) {
-            const filtersForAPI = searchTicketsUtils.getFiltersForAPI(listConfigWithCompleteAuthorsList.filters);
+        if(formEdited && formState.dateRange.valid) {
+            const filtersForAPI = searchTicketsUtils.prepareFiltersForAPI(listConfigWithCompleteAuthorsList.filters);
             const currentPath = window.location.pathname;
             const urlQuery = searchTicketsUtils.getFiltersForURL({
                 filters: filtersForAPI,
@@ -281,23 +312,24 @@ class TicketQueryFilters extends React.Component {
 
     removeTag(tag) {
         const { formState } = this.props;
+        let tagListName = formState.tags;
+        let newTagList = tagListName.filter(item => item !== tag);
+        let selectedTags = this.tagsNametoTagsId(this.getSelectedTagsName(newTagList));
 
-        this.onChangeFormState({...formState, tags: formState.tags.filter(item => item !== tag)});
+        this.onChangeFormState({...formState, tags: selectedTags});
     }
 
     tagsNametoTagsId(selectedTagsName) {
-        let selectedTagsId = [];
-
-        if (selectedTagsName != undefined) {
-            selectedTagsId = selectedTagsName.map(
-                (tagName) => (this.getTags().find(_tag => (_tag.name === tagName)) || {}).id
-            );
-        }
+        let tagList = this.getTags();
+        let selectedTags = tagList.filter(item => _.includes(selectedTagsName, item.name));
+        let selectedTagsId = selectedTags.map(tag => tag.id);
 
         return selectedTagsId;
     }
 
     onChangeForm(data) {
+        const newStartDate = data.dateRange.startDate ? data.dateRange.startDate : searchTicketsUtils.getDefaultLocalStartDate();
+        const newEndDate = data.dateRange.endDate ? data.dateRange.endDate : searchTicketsUtils.getDefaultlocalEndDate();
         const departmentsId = data.departments.map(department => department.id);
         const staffsId = data.owners.map(staff => staff.id);
         const tagsName = this.tagsNametoTagsId(data.tags);
@@ -309,6 +341,11 @@ class TicketQueryFilters extends React.Component {
             owners: staffsId,
             departments: departmentsId,
             authors: authors,
+            dateRange: {
+                ...data.dateRange,
+                startDate: newStartDate,
+                endDate: newEndDate
+            }
         });
     }
 
@@ -329,8 +366,8 @@ class TicketQueryFilters extends React.Component {
             id: author.id*1,
             isStaff: author.isStaff*1,
             profilePic: author.profilePic,
-            content: author.profilePic !== undefined ? ticketUtils.renderStaffOption(author) : author.name,
-            contentOnSelected: author.profilePic !== undefined ? ticketUtils.renderStaffSelected(author) : author.name
+            content: author.profilePic !== undefined ? this.renderStaffOption(author) : author.name,
+            contentOnSelected: author.profilePic !== undefined ? this.renderStaffSelected(author) : author.name
         }));
     }
 

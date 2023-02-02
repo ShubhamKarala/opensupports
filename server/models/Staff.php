@@ -19,7 +19,7 @@ class Staff extends DataStore {
     public static function authenticate($userEmail, $userPassword) {
         $user = Staff::getUser($userEmail, 'email');
 
-        return (!$user->isNull() && Hashing::verifyPassword($userPassword, $user->password)) ? $user : new NullDataStore();
+        return ($user && Hashing::verifyPassword($userPassword, $user->password)) ? $user : new NullDataStore();
     }
 
     public static function getProps() {
@@ -73,8 +73,7 @@ class Staff extends DataStore {
             'departments' => $this->sharedDepartmentList->toArray(),
             'tickets' => $this->sharedTicketList->toArray(),
             'lastLogin' => $this->lastLogin,
-            'sendEmailOnNewTicket' => $this->sendEmailOnNewTicket,
-            'isStaff' => 1
+            'sendEmailOnNewTicket' => $this->sendEmailOnNewTicket
         ];
     }
 }

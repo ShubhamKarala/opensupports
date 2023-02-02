@@ -6,9 +6,6 @@ build:
 run:
 	@docker run -it --network os-net -v ${PWD}:/app -v ${PWD}/../server:/server opensupports-tests make test
 
-run-not-interactive:
-	@docker run --network os-net -v ${PWD}:/app -v ${PWD}/../server:/server opensupports-tests make test
-
 clear:
 	@docker run -it --network os-net -v ${PWD}:/app -v ${PWD}/../server:/server opensupports-tests make truncate-db
 

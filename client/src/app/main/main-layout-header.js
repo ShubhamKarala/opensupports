@@ -13,24 +13,12 @@ class MainLayoutHeader extends React.Component {
     render() {
         return (
             <div className="main-layout-header">
-                {this.renderHeaderOptions()}
+                {this.renderAccessLinks()}
+                <LanguageSelector {...this.getLanguageSelectorProps()} />
             </div>
         );
     }
-
-    renderHeaderOptions(){
-        let result = null;
-        
-        if(!this.props.config['maintenance-mode']){
-            result = (<div>
-                {this.renderAccessLinks()}
-                <LanguageSelector {...this.getLanguageSelectorProps()} />
-            </div>)
-        }
-
-        return result;
-    }
-
+    
     renderAccessLinks() {
         const {
             session,

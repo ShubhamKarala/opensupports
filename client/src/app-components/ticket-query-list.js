@@ -8,8 +8,6 @@ import TicketList from 'app-components/ticket-list';
 import Message from 'core-components/message';
 import searchFiltersActions from '../actions/search-filters-actions';
 import queryString from 'query-string';
-import searchTicketsUtils from 'lib-app/search-tickets-utils';
-import history from 'lib-app/history';
 
 class TicketQueryList extends React.Component {
 
@@ -67,7 +65,6 @@ class TicketQueryList extends React.Component {
             orderBy: filters.orderBy ? JSON.parse(filters.orderBy) : filters.orderBy,
             showOrderArrows: true,
             onChangeOrderBy: onChangeOrderBy,
-            showPageSizeDropdown: false
         };
     }
 

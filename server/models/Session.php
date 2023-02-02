@@ -2,7 +2,6 @@
 
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', getenv('IS_DOCKER') ? 0 : 1);
-ini_set('session.gc_maxlifetime', 3600 * 24 * 30);
 
 class Session {
     use SingletonTrait;
@@ -14,7 +13,6 @@ class Session {
     }
 
     public function initSession() {
-        session_set_cookie_params(3600 * 24 * 30);
         session_cache_limiter(false);
         session_start();
     }

@@ -52,4 +52,4 @@ history.listen(() => {
 
 store.dispatch(ConfigActions.checkInstallation());
 store.dispatch(ConfigActions.init());
-store.dispatch(SessionActions.checkSession());
+store.dispatch(SessionActions.initSession());

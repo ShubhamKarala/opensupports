@@ -19,7 +19,6 @@ use Respect\Validation\Validator as DataValidator;
  * 
  * @apiUse NO_PERMISSION
  * @apiUse INVALID_PAGE
- * @apiUse INVALID_PAGE_SIZE
  *
  * @apiSuccess {Object} data Information about a tickets and quantity of pages.
  * @apiSuccess {[Ticket](#api-Data_Structures-ObjectTicket)[]} data.tickets Array of new tickets of the current page.
@@ -39,10 +38,6 @@ class GetNewTicketsStaffController extends Controller {
                 'page' => [
                     'validation' => DataValidator::numeric(),
                     'error' => ERRORS::INVALID_PAGE
-                ],
-                'pageSize' => [
-                    'validation' => DataValidator::oneOf(DataValidator::intVal()->between(5, 50),DataValidator::nullType()),
-                    'error' => ERRORS::INVALID_PAGE_SIZE
                 ]
             ]
         ];
@@ -50,7 +45,6 @@ class GetNewTicketsStaffController extends Controller {
     public function handler() {
         $page = Controller::request('page');
         $departmentId = Controller::request('departmentId');
-        $pageSize = Controller::request('pageSize') ? Controller::request('pageSize') : 10;
 
         if (Ticket::isTableEmpty()) {
             Response::respondSuccess([
@@ -83,14 +77,14 @@ class GetNewTicketsStaffController extends Controller {
         $countTotal = Ticket::count($query);
 
         $query .= ' ORDER BY unread_staff DESC';
-        $query .= ' LIMIT ' . $pageSize . ' OFFSET ' . ($page-1)*10;
+        $query .= ' LIMIT 10 OFFSET ' . ($page-1)*10;
 
         $ticketList = Ticket::find($query);
 
         Response::respondSuccess([
             'tickets' => $ticketList->toArray(true),
             'page' => $page,
-            'pages' => ceil($countTotal / $pageSize)
+            'pages' => ceil($countTotal / 10)
         ]);
     }
 }

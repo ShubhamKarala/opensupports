@@ -5,7 +5,6 @@ import classNames         from 'classnames';
 import i18n               from 'lib-app/i18n';
 import API                from 'lib-app/api-call';
 import history            from 'lib-app/history';
-import SessionStore from 'lib-app/session-store';
 
 import Captcha            from 'app/main/captcha';
 import SubmitButton       from 'core-components/submit-button';
@@ -34,22 +33,11 @@ class MainSignUpWidget extends React.Component {
     }
 
     componentDidMount() {
-        if(!SessionStore.getItem('customFields')) {
-            API.call({
-                path: '/system/get-custom-fields',
-                data: {}
-            })
-            .then(result => {
-                SessionStore.storeCustomField(result.data);
-                this.setState({
-                    customFields: result.data
-                });
-            })
-        } else {
-            this.setState({
-                customFields: SessionStore.getCustomFields()
-            });
-        }
+        API.call({
+            path: '/system/get-custom-fields',
+            data: {}
+        })
+        .then(result => this.setState({customFields: result.data}));
     }
 
     render() {

@@ -59,19 +59,23 @@ class StaffEditor extends React.Component {
         showMessage: true,
         showReInviteStaffMessage: true,
         rawForm: {
+            dateRange: statsUtils.getInitialDateRange(),
             departments: [],
-            owners: [{id: this.props.staffId}],
+            owners: [],
             tags: []
         },
-        ticketData: {},
-        ticketListLoading: false
+        ticketData: {}
     };
 
     componentDidMount() {
+        const departmentsAssigned = SessionStore.getDepartments().filter((_department, index) => this.state.departments.includes(index));
+        const departmentsAssignedId = departmentsAssigned.map(department => department.id);
+
         this.retrieveStaffMembers();
         this.retrieveTicketsAssigned(INITIAL_API_VALUE);
         statsUtils.retrieveStats({
-            rawForm: this.state.rawForm
+            rawForm: this.state.rawForm,
+            departments: departmentsAssignedId
         }).then(({data}) => {
             this.setState({
                 ticketData: data,
@@ -83,8 +87,6 @@ class StaffEditor extends React.Component {
     }
 
     render() {
-        console.log('State: ', this.state.rawForm);
-
         const { name, level, profilePic, myAccount, staffId, staffList, userId } = this.props;
         const { message, tickets, loadingPicture, email } = this.state;
         const myData = _.filter(staffList, {id: `${staffId}`})[0];
@@ -299,7 +301,7 @@ class StaffEditor extends React.Component {
 
     renderDepartmentsInfo() {
         const { departments } = this.state;
-        const departmentsAssigned = this.getDepartments().filter((_department, index) => departments.includes(index));
+        const departmentsAssigned = this.getDepartments().filter((_department, index) => departments.includes(index))
 
         return (
             <Form values={{departments: Array.from({length: departmentsAssigned.length}, (value, index) => index)}}>
@@ -315,7 +317,7 @@ class StaffEditor extends React.Component {
             <div className="admin-panel-stats">
                 {
                     loadingStats ?
-                        <Loading className="admin-panel-stats__loading" backgrounded size="large" /> :
+                        <div className="admin-panel-stats__loading"><Loading backgrounded size="large" /></div> :
                         statsUtils.renderStatistics({showStatCards: true, showStatsByHours: true, ticketData})
                 }
             </div>
@@ -328,10 +330,7 @@ class StaffEditor extends React.Component {
                 <span className="separator" />
                 <div className="staff-editor__tickets">
                     <div className="staff-editor__tickets-title">{i18n('TICKETS_ASSIGNED')}</div>
-                        {this.state.ticketListLoading ?
-                            <Loading className="staff-editor__ticketlist-loading" backgrounded size="large"/> :
-                            <TicketList {...this.getTicketListProps()} />
-                        }
+                    <TicketList {...this.getTicketListProps()} />
                 </div>
             </div>
         );
@@ -424,10 +423,7 @@ class StaffEditor extends React.Component {
     }
 
     onSubmit(eventType, form) {
-        this.setState({
-            loadingStats: true,
-            ticketListLoading: true
-        });
+        this.setState({loadingStats: true});
 
         const { myAccount, staffId, onChange } = this.props;
         let departments;
@@ -451,14 +447,14 @@ class StaffEditor extends React.Component {
         }).then(() => {
             this.retrieveStaffMembers();
             window.scrollTo(0,250);
-            this.setState({
-                message: eventType,
-                showMessage: true,
-                ticketListLoading: false
-            });
+            this.setState({message: eventType, showMessage: true});
+
+            const departmentsAssigned = SessionStore.getDepartments().filter((_department, index) => this.state.departments.includes(index));
+            const departmentsAssignedId = departmentsAssigned.map(department => department.id);
 
             statsUtils.retrieveStats({
-                rawForm: this.state.rawForm
+                rawForm: this.state.rawForm,
+                departments: departmentsAssignedId
             }).then(({data}) => {
                 this.setState({ticketData: data, loadingStats: false});
             }).catch((error) => {
@@ -466,7 +462,6 @@ class StaffEditor extends React.Component {
                 this.setState({loadingStats: false});
             });
 
-            this.retrieveTicketsAssigned({page: 1});
             onChange && onChange();
         }).catch(() => {
             window.scrollTo(0,250);
@@ -507,7 +502,6 @@ class StaffEditor extends React.Component {
                 loadingPicture: false
             });
 
-            this.retrieveStaffMembers();
             onChange && onChange();
         }).catch(() => {
             window.scrollTo(0,0);

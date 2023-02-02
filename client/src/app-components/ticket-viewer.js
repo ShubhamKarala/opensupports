@@ -10,7 +10,6 @@ import SessionStore       from 'lib-app/session-store';
 import MentionsParser     from 'lib-app/mentions-parser';
 import history from 'lib-app/history';
 import searchTicketsUtils from 'lib-app/search-tickets-utils';
-import ticketUtils from 'lib-app/ticket-utils';
 
 import TicketEvent        from 'app-components/ticket-event';
 import AreYouSure         from 'app-components/are-you-sure';
@@ -169,11 +168,11 @@ class TicketViewer extends React.Component {
                         onChange={(e) => this.setState({newTitle: e.target.value})} />
                 </div>
                 <div className="ticket-viewer__edit-title__buttons">
-                    <Button className="ticket-viewer__edit-title__button" disabled={this.state.editTitleLoading} type='primary' size="medium" onClick={() => this.setState({editTitle: false, newTitle: this.props.ticket.title})}>
-                        {this.state.editTitleLoading ? <Loading /> : <Icon name="times" size="large" />}
+                    <Button disabled={this.state.editTitleLoading} type='primary' size="medium" onClick={() => this.setState({editTitle: false, newTitle: this.props.ticket.title})}>
+                        {this.state.editTitleLoading ? <Loading /> : <Icon name="times" />}
                     </Button>
-                    <Button className="ticket-viewer__edit-title__button" disabled={this.state.editTitleLoading} type='secondary' size="medium" onClick={this.changeTitle.bind(this)}>
-                        {this.state.editTitleLoading ? <Loading /> : <Icon name="check" size="large" />}
+                    <Button disabled={this.state.editTitleLoading} type='secondary' size="medium" onClick={this.changeTitle.bind(this)}>
+                        {this.state.editTitleLoading ? <Loading /> : <Icon name="check" />}
                     </Button>
                 </div>
             </div>
@@ -266,7 +265,7 @@ class TicketViewer extends React.Component {
                     onRemoveClick={this.removeTag.bind(this)}
                     onTagSelected={this.addTag.bind(this)}
                     loading={this.state.tagSelectorLoading} />
-                {this.renderCancelButton("Tags", "CLOSE")}
+                {this.renderCancelButton("Tags")}
             </div>
         );
     }
@@ -274,7 +273,7 @@ class TicketViewer extends React.Component {
     renderEditStatus() {
         return  (
             <div className="ticket-viewer__edit-status__buttons">
-                {this.renderCancelButton("Status", "CANCEL")}
+                {this.renderCancelButton("Status")}
                 {this.props.ticket.closed ? this.renderReopenTicketButton() : this.renderCloseTicketButton()}
             </div>
         );
@@ -349,7 +348,7 @@ class TicketViewer extends React.Component {
         if(assignmentAllowed && ticket.owner) {
             ownerNode = (
                 <a className="ticket-viewer__info-owner-name" href={this.searchTickets(filtersOnlyWithOwner)}>
-                    {ticketUtils.renderStaffSelected(ticket.owner)}
+                    {ticket.owner.name}
                 </a>
             );
         } else {
@@ -376,7 +375,7 @@ class TicketViewer extends React.Component {
                     className="ticket-viewer__editable-dropdown" items={items}
                     selectedIndex={selectedIndex}
                     onChange={this.onAssignmentChange.bind(this)} />
-                {this.renderCancelButton("Owner", "CANCEL")}
+                {this.renderCancelButton("Owner")}
             </div>
         );
     }
@@ -392,7 +391,7 @@ class TicketViewer extends React.Component {
                     departments={departments}
                     selectedIndex={_.findIndex(departments, {id: ticket.department.id})}
                     onChange={this.onDepartmentDropdownChanged.bind(this)} />
-                {this.renderCancelButton("Department", "CANCEL")}
+                {this.renderCancelButton("Department")}
             </div>
         );
     }
@@ -419,8 +418,8 @@ class TicketViewer extends React.Component {
         )
     }
 
-    renderCancelButton(option, type) {
-        return <Button type='link' size="medium" onClick={() => this.setState({["edit"+option]: false})}>{i18n(type)}</Button>
+    renderCancelButton(option) {
+        return <Button type='link' size="medium" onClick={() => this.setState({["edit"+option]: false})}>{i18n('CLOSE')}</Button>
     }
 
     renderTicketEvent(isTicketClosed, ticketEventObject, index) {
@@ -826,7 +825,6 @@ class TicketViewer extends React.Component {
             loading: false,
             commentValue: TextEditor.createEmpty(),
             commentError: false,
-            commentFile: null,
             commentEdited: false
         });
 
@@ -848,17 +846,35 @@ class TicketViewer extends React.Component {
     }
 
     getStaffAssignmentItems() {
-        const { staffMembers, ticket } = this.props;
+        const { userDepartments, userId, ticket } = this.props;
         let staffAssignmentItems = [
             {content: i18n('NONE'), contentOnSelected: i18n('NONE'), id: 0}
         ];
 
+        if(_.some(userDepartments, {id: ticket.department.id})) {
+            staffAssignmentItems.push({
+                content: i18n('ASSIGN_TO_ME'),
+                contentOnSelected: this.getCurrentStaff().name,
+                id: userId
+            });
+        }
+
         staffAssignmentItems = staffAssignmentItems.concat(
-            ticketUtils.getStaffList({staffList: staffMembers, ticket}, 'toDropDown').map(
-                ({id, content}) => ({content, id: id*1})
+            _.map(
+                this.getStaffList(),
+                ({id, name}) => ({content: name, contentOnSelected: name, id: id*1})
             )
         );
+
         return staffAssignmentItems;
+    }
+
+    getStaffList() {
+        const { userId, staffMembers, ticket } = this.props;
+
+        return _.filter(staffMembers, ({id, departments}) => {
+            return (id != userId) && _.some(departments, {id: ticket.department.id});
+        })
     }
 
     getCurrentStaff() {

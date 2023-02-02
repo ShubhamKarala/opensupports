@@ -124,15 +124,13 @@ class TopicViewer extends React.Component {
     }
 
     renderEditModal() {
-        const {id, onChange, name, icon, iconColor} = this.props;
-
-        const props = {
-            topicId: id,
-            onChange,
+        let props = {
+            topicId: this.props.id,
+            onChange: this.props.onChange,
             defaultValues: {
-                title: name,
-                icon,
-                color: iconColor,
+                title: this.props.name,
+                icon: this.props.icon,
+                iconColor: this.props.iconColor,
                 private: this.props.private * 1
             }
         };

@@ -24,18 +24,10 @@ const config = env => {
         module: {
             rules: [
                 {
-                    test: /\.js$/,
+                    test :/\.js$/,
                     exclude: /node_modules/,
-                    use: [
-                        {
-                            loader: "babel-loader",
-                            options: {
-                                cacheDirectory: true,
-                                cacheCompression: false,
-                            },
-                        } /*, 'eslint-loader'*/,
-                    ],
-                  },
+                    use: ['babel-loader'/*, 'eslint-loader'*/],
+                },
                 {
                     test: /\.css$/,
                     use: [
@@ -66,19 +58,17 @@ const config = env => {
         },
         devServer: {
             contentBase: BUILD_DIR,
-            host: "0.0.0.0",
+            host: 'localhost',
             compress: true,
             port: 3000,
-            disableHostCheck: true,
+            disableHostCheck: false,
             open: true,
             hot: true,
             historyApiFallback: true,
             proxy: {
-                "/api": {
-                    target: "http://opensupports-srv:80",
-                    pathRewrite: { "^/api": "" },
-                    secure: false,
-                    changeOrigin: true,
+                '/api': {
+                    target: 'http://localhost:8080',
+                    pathRewrite: {'^/api' : ''},
                 },
             },
         },

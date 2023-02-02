@@ -27,7 +27,6 @@ export default {
     'TICKET_LIST': 'Ticket List',
     'SUPPORT_CENTER': 'Support Center',
     'SUPERVISED_USER': 'Supervised users',
-    'SUPERVISED_USER_INFORMATION': 'Allows to see tickets from another user',
     'DEPARTMENT': 'Department',
     'DEFAULT_DEPARTMENT': 'Default Department',
     'AUTHOR': 'Author',
@@ -78,7 +77,6 @@ export default {
     'OWNER': 'Owner',
     'OWNED': 'Owned',
     'STATUS': 'Status',
-    'PERIOD': 'Period',
     'NONE': 'None',
     'ANY': 'Any',
     'OPENED': 'Opened',
@@ -226,7 +224,6 @@ export default {
     'NEW_CUSTOM_FIELD': 'New Custom field',
     'TYPE': 'Type',
     'SELECT_INPUT': 'Select input',
-    'TEXT': 'Text',
     'TEXT_INPUT': 'Text input',
     'OPTION': 'Option {index}',
     'OPTIONS': 'Options',
@@ -250,7 +247,6 @@ export default {
     'USER_UNLOGGED_IN': 'This user has never logged in before',
     'RESEND_STAFF_INVITATION_SUCCESS': 'The invitation was sent successfully',
     'RESEND_STAFF_INVITATION_FAIL': 'The invitation could not be sent',
-    'SESSION_EXPIRED': 'Session expired',
 
     //ACTIVITIES
     'ACTIVITY_COMMENT': 'commented ticket',
@@ -373,7 +369,6 @@ export default {
     'INVITE_USER_VIEW_DESCRIPTION': 'Here you can invite an user to join our support system, he will just need to provide his password to create a new user.',
     'INVITE_STAFF_DESCRIPTION': 'Here you can invite staff members to your teams.',
     'TICKETS_INFORMATION' : 'Tickets from departments you don’t have assigned won’t be visible.',
-    'SESSION_EXPIRED_DESCRIPTION': 'Your session has timed out. Please log in again.',
 
     //ERRORS
     'EMAIL_OR_PASSWORD': 'Email or password invalid',
@@ -415,10 +410,6 @@ export default {
     'INVALID_SUPERVISED_USERS': 'Invalid supervised users',
     'SUPERVISOR_CAN_NOT_SUPERVISE_HIMSELF': 'Supervisor can not supervise himself',
     'NAME_ALREADY_USED': 'Name already used',
-    'INVALID_PAGE_SIZE': 'Invalid page size',
-    'INVALID_CUSTOM_FIELD_TYPE': 'Invalid custom field type',
-    'INVALID_CUSTOM_FIELD_OPTIONS': 'Invalid custom field options',
-    'CUSTOM_FIELD_ALREADY_EXISTS': 'Custom field already exists',
 
     //MESSAGES
     'SIGNUP_SUCCESS': 'You have registered successfully in our support system.',

@@ -30,7 +30,7 @@ export function updateSearchTicketsFromURL() {
             const currentSearchParams = queryString.parse(currentSearch);
             const showFilters = (currentSearch !== SEARCH_TICKETS_INITIAL_QUERY) && currentSearchParams.custom;
 
-            if(showFilters !== undefined && currentSearchParams.useInitialValues) store.dispatch(searchFiltersActions.changeShowFilters(!showFilters));
+            if((showFilters !== undefined) && currentSearchParams.useInitialValues) store.dispatch(searchFiltersActions.changeShowFilters(!showFilters));
 
             store.dispatch(searchFiltersActions.changeFilters(listConfig));
             store.dispatch(searchFiltersActions.retrieveSearchTickets(
@@ -38,8 +38,7 @@ export function updateSearchTicketsFromURL() {
                     ...store.getState().searchFilters.ticketQueryListState,
                     page: (currentSearchParams.page || INITIAL_PAGE)*1
                 },
-                searchTicketsUtils.getFiltersForAPI(listConfig.filters),
-                currentSearchParams.pageSize
+                searchTicketsUtils.prepareFiltersForAPI(listConfig.filters)
             ));
         });
     }

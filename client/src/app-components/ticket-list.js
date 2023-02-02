@@ -16,7 +16,6 @@ import Tag from 'core-components/tag';
 import Icon from 'core-components/icon';
 import Message from 'core-components/message';
 import history from 'lib-app/history';
-import PageSizeDropdown from './page-size-dropdown';
 
 class TicketList extends React.Component {
     static propTypes = {
@@ -32,8 +31,7 @@ class TicketList extends React.Component {
         ]),
         closedTicketsShown: React.PropTypes.bool,
         onClosedTicketsShownChange: React.PropTypes.func,
-        onDepartmentChange: React.PropTypes.func,
-        showPageSizeDropdown: React.PropTypes.bool
+        onDepartmentChange: React.PropTypes.func
     };
 
     static defaultProps = {
@@ -43,8 +41,7 @@ class TicketList extends React.Component {
         departments: [],
         ticketPath: '/dashboard/ticket/',
         type: 'primary',
-        closedTicketsShown: false,
-        showPageSizeDropdown: true
+        closedTicketsShown: false
     };
 
     state = {
@@ -52,31 +49,24 @@ class TicketList extends React.Component {
     };
 
     render() {
-        const { type, showDepartmentDropdown, onClosedTicketsShownChange, showPageSizeDropdown } = this.props;
-        const pages = [5, 10, 20, 50];
+        const { type, showDepartmentDropdown, onClosedTicketsShownChange } = this.props;
 
         return (
             <div className="ticket-list">
                 <div className="ticket-list__filters">
-                   <div className="ticket-list__main-filters">
-                        {(type === 'primary') ? this.renderMessage() : null}
-                        {
-                            ((type === 'secondary') && showDepartmentDropdown) ?
-                                this.renderDepartmentsDropDown() :
-                                null
-                        }
-                        {onClosedTicketsShownChange ? this.renderFilterCheckbox() : null}
-                   </div>
-                   {
-                        showPageSizeDropdown ?
-                            <PageSizeDropdown className="ticket-list__page-dropdown" pages={pages} onChange={(event) => this.pageSizeChange(event)} /> : 
+                    {(type === 'primary') ? this.renderMessage() : null}
+                    {
+                        ((type === 'secondary') && showDepartmentDropdown) ?
+                            this.renderDepartmentsDropDown() :
                             null
                     }
+                    {onClosedTicketsShownChange ? this.renderFilterCheckbox() : null}
                 </div>
                 <Table {...this.getTableProps()} />
             </div>
         );
     }
+
 
     renderFilterCheckbox() {
         return (
@@ -123,12 +113,6 @@ class TicketList extends React.Component {
         }
     }
 
-    pageSizeChange(event) {
-        const { onPageSizeChange } = this.props;
-
-        onPageSizeChange && onPageSizeChange(event.pageSize);
-    }
-
     getDepartmentDropdownProps() {
         const { departments, onDepartmentChange } = this.props;
 
@@ -154,7 +138,7 @@ class TicketList extends React.Component {
             loading,
             headers: this.getTableHeaders(),
             rows: this.getTableRows(),
-            pageSize: this.state.tickets,
+            pageSize: 10,
             page,
             pages,
             onPageChange

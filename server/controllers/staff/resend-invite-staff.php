@@ -17,7 +17,11 @@ DataValidator::with('CustomValidations', true);
  * @apiParam {String} email The email of the new staff member.
  * 
  * @apiUse NO_PERMISSION
+ * @apiUse INVALID_NAME
  * @apiUse INVALID_EMAIL
+ * @apiUse INVALID_PASSWORD
+ * @apiUse INVALID_LEVEL
+ * @apiUse ALREADY_A_STAFF
  *
  * @apiSuccess {Object} data Empty object
  *

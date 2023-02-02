@@ -4,25 +4,17 @@
         word-break: break-word;
     }
 
-    &__header-wrapper {
-        display: flex;
-        flex-direction: row;
-        height: 35px;
-    }
-
-    &__header-buttons {
+    &__edit-buttons {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        width: 50px;
-        margin-bottom: 5px;
-        margin-left: 15px;
+        width: 200px;
+        margin-bottom: 20px;
     }
 
-    &__edit-icon {
-        color: $grey;
-        cursor: pointer;
+    &__edit-button {
+        margin-right: 20px;
     }
 
     &__last-edited {

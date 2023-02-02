@@ -321,8 +321,8 @@ class AdminPanelAdvancedSettings extends React.Component {
             path: '/system/csv-import',
             dataAsForm: true,
             data: {
-                file,
-                password
+                file: file,
+                password: password
             }
         })
         .then((result) => this.setState({
@@ -333,19 +333,12 @@ class AdminPanelAdvancedSettings extends React.Component {
                 <div>
                     {i18n('ERRORS_FOUND')}
                     <ul>
-                        {result.data.map((error, index) => <li key={`csv-file__key-${index}`} >{error}</li>)}
+                        {result.data.map((error) => <li>{error}</li>)}
                     </ul>
                 </div>
             ) : null
         }))
-        .catch((error) => {
-            this.setState({
-                messageType: 'error',
-                showMessage: true,
-                messageTitle: null,
-                messageContent: i18n(error.message)
-            })
-        });
+        .catch(() => this.setState({messageType: 'error', showMessage: true, messageTitle: null, messageContent: i18n('INVALID_FILE')}));
     }
 
     onBackupDatabase() {
